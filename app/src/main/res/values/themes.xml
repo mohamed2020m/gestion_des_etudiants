@@ -1,0 +1,24 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.ProjetWS" parent="Theme.Material3.DayNight">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/lighter_red</item>
+        <item name="colorTertiary">@color/black</item>
+        <item name="colorSecondary">@color/pizza_title_light</item>
+        <item name="android:statusBarColor">@color/lighter_red</item>
+    </style>
+
+    <style name="Theme.ProjetWS" parent="Base.Theme.ProjetWS" />
+
+    <style name="text">
+        <item name="android:textSize">17dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:textColor">@color/lighter_red</item>
+    </style>
+    <style name="input">
+        <item name="android:paddingBottom">20dp</item>
+    </style>
+
+    <style name="Theme.etudiant.NoActionBar" parent="Theme.Material3.DayNight.NoActionBar" />
+</resources>
