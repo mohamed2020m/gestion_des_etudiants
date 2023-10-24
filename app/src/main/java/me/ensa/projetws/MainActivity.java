@@ -13,26 +13,25 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -50,38 +49,42 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.hdodenhof.circleimageview.CircleImageView;
 import me.ensa.projetws.adapter.EtudiantAdapter;
 import me.ensa.projetws.beans.Etudiant;
 import me.ensa.projetws.utlis.EtudiantDeserializer;
 
 public class MainActivity extends AppCompatActivity {
-    public String host = "http://192.168.0.131";
+//    public String host = "http://" + GetIPAddress.getIP();
+    public String host = "http://192.168.0.161";
     private RecyclerView recyclerView;
     private EtudiantAdapter etudiantAdapter = null;
+    private LottieAnimationView error_icon;
     private FloatingActionButton fab;
-    private ProgressBar load_data;
+    private LottieAnimationView load_data;
     private TextView text_error, empty;
     private Button try_again;
     private RelativeLayout main;
     RequestQueue requestQueue;
     List<Etudiant> list_etudiants = null;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+//        UpdateNetworkSecurityConfig.updateNetworkSecurityConfig(this);
+
         main = findViewById(R.id.main);
         text_error = findViewById(R.id.error);
         empty = findViewById(R.id.empty);
         try_again = findViewById(R.id.try_again);
+        error_icon = findViewById(R.id.error_icon);
         load_data = findViewById(R.id.load_data);
         recyclerView = findViewById(R.id.recycle_view);
 
@@ -190,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
                     recyclerView.setVisibility(View.VISIBLE);
                     text_error.setVisibility(View.GONE);
                     try_again.setVisibility(View.GONE);
+                    error_icon.setVisibility(View.GONE);
 
                     if(response != null){
 
@@ -234,11 +238,14 @@ public class MainActivity extends AppCompatActivity {
                 load_data.setVisibility(View.GONE);
                 text_error.setVisibility(View.VISIBLE);
                 try_again.setVisibility(View.VISIBLE);
+                error_icon.setVisibility(View.VISIBLE);
                 try_again.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        text_error.setVisibility(View.GONE);
-                        try_again.setVisibility(View.GONE);
+//                        text_error.setVisibility(View.GONE);
+//                        try_again.setVisibility(View.GONE);
+//                        error_icon.setVisibility(View.GONE);
+                        reset();
                         refreshContent();
                     }
                 });
@@ -258,26 +265,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        String imageBase64;
+//        String imageBase64;
         if ( requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri selectedImageUri = data.getData();
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
+            updateImage(selectedImageUri);
 
-                // Convert the selected image to a base64 string
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-                byte[] byteArray = byteArrayOutputStream.toByteArray();
-                imageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT);
-
-                SharedPreferences sharedPreferences = getSharedPreferences("my_prefs", MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("image", imageBase64);
-                editor.apply();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
+//
+//                // Convert the selected image to a base64 string
+//                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+//                byte[] byteArray = byteArrayOutputStream.toByteArray();
+//                imageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT);
+//
+//                SharedPreferences sharedPreferences = getSharedPreferences("my_prefs", MODE_PRIVATE);
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.putString("image", imageBase64);
+//                editor.apply();
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
@@ -314,8 +323,54 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        reset();
+    }
+
+    private void reset(){
+        text_error.setVisibility(View.GONE);
+        try_again.setVisibility(View.GONE);
+        error_icon.setVisibility(View.GONE);
+    }
+
+    @Override
     public void onBackPressed() {
         super.onBackPressed();
         finish();
+    }
+
+    public void updateImage(Uri selectedImageUri) {
+        new ImageEncoderTask().execute(selectedImageUri);
+    }
+
+    private class ImageEncoderTask extends AsyncTask<Uri, Void, String> {
+        @Override
+        protected String doInBackground(Uri... uris) {
+            Uri selectedImageUri = uris[0];
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), selectedImageUri);
+
+                // Convert the bitmap to base64 here (within the doInBackground method)
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                byte[] byteArray = byteArrayOutputStream.toByteArray();
+                return Base64.encodeToString(byteArray, Base64.DEFAULT);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String imageBase64) {
+            if (imageBase64 != null) {
+                if (etudiantAdapter != null) {
+                    etudiantAdapter.updateImage(imageBase64);
+                }
+            } else {
+                Log.d("error", "error");
+            }
+        }
     }
 }

@@ -27,7 +27,7 @@
         android:scaleType="centerCrop"
         android:layout_marginVertical="10dp"
         android:layout_gravity="center"
-        android:src="@drawable/up" />
+        android:src="@drawable/upload" />
 
 <!--    <TextView-->
 <!--        android:id="@+id/textView"-->
@@ -92,19 +92,38 @@
 <!--        style="@style/input"-->
 <!--        android:inputType="textPersonName" />-->
 
-    <TextView
-        android:id="@+id/textView3"
-        style="@style/text"
+<!--    <TextView-->
+<!--        android:id="@+id/textView3"-->
+<!--        style="@style/text"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Ville" />-->
+<!--    <Spinner-->
+<!--        android:id="@+id/ville"-->
+<!--        android:entries="@array/villes"-->
+<!--        style="@style/input"-->
+<!--        android:layout_marginVertical="10dp"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content" />-->
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/dropdown"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ville" />
-    <Spinner
-        android:id="@+id/ville"
-        android:entries="@array/villes"
-        style="@style/input"
+        android:inputType="none"
         android:layout_marginVertical="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:hint="Select Your City"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+        <AutoCompleteTextView
+            android:id="@+id/ville"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            app:simpleItems="@array/villes" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
     <TextView
         android:id="@+id/textView4"
         style="@style/text"

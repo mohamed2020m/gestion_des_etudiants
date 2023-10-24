@@ -7,12 +7,22 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <ProgressBar
+<!--    <ProgressBar-->
+<!--        android:id="@+id/load_data"-->
+<!--        android:visibility="gone"-->
+<!--        android:layout_width="92dp"-->
+<!--        android:layout_height="100dp"-->
+<!--        android:layout_centerInParent="true" />-->
+
+    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/load_data"
-        android:visibility="gone"
-        android:layout_width="92dp"
-        android:layout_height="100dp"
-        android:layout_centerInParent="true" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        android:scaleType="centerCrop"
+        android:visibility="visible"
+        app:lottie_rawRes="@raw/animation_loading" />
 
     <TextView
         android:id="@+id/empty"
@@ -23,6 +33,18 @@
         android:visibility="gone"
         android:text="Empty! add some students!" />
 
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/error_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        android:layout_marginVertical="10dp"
+        android:scaleType="fitCenter"
+        android:layout_centerInParent="true"
+        android:visibility="visible"
+        app:lottie_rawRes="@raw/animation_error" />
+
     <TextView
         android:id="@+id/error"
         android:layout_width="wrap_content"
@@ -30,6 +52,7 @@
         android:layout_centerInParent="true"
         android:textSize="18sp"
         android:visibility="gone"
+        android:layout_below="@+id/error_icon"
         android:text="Something Went Wrong!" />
 
     <Button
@@ -39,6 +62,8 @@
         android:layout_below="@id/error"
         android:layout_marginTop="10dp"
         android:visibility="gone"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/light_red"
         android:layout_centerHorizontal="true"
         android:text="Try again" />
 

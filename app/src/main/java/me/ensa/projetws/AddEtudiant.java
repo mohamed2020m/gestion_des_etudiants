@@ -12,6 +12,8 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -34,12 +36,15 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.ensa.projetws.utlis.GetIPAddress;
+
 
 public class AddEtudiant extends AppCompatActivity{
-    public String host = "http://192.168.0.131";
+//    public String host = "http://" + GetIPAddress.getIP();
+    public String host = "http://192.168.0.161";
     private EditText nom;
     private EditText prenom;
-    private Spinner ville;
+    private AutoCompleteTextView ville;
     private RadioButton m;
     private RadioButton f;
     private Button add;
@@ -49,6 +54,7 @@ public class AddEtudiant extends AppCompatActivity{
 
     public static final int PICK_IMAGE_REQUEST = 1;
     RequestQueue requestQueue;
+    private String selectedVille;
     String insertUrl = host + "/backend_volley/ws/createEtudiant.php";
 
     @Override
@@ -58,7 +64,7 @@ public class AddEtudiant extends AppCompatActivity{
         image = (ImageView) findViewById(R.id.upload_image);
         nom = (EditText) findViewById(R.id.nom);
         prenom = (EditText) findViewById(R.id.prenom);
-        ville = (Spinner) findViewById(R.id.ville);
+        ville = (AutoCompleteTextView) findViewById(R.id.ville);
         add = (Button) findViewById(R.id.add);
         m = (RadioButton) findViewById(R.id.m);
         f = (RadioButton) findViewById(R.id.f);
@@ -66,6 +72,8 @@ public class AddEtudiant extends AppCompatActivity{
 
         // Enable the "Up" button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
         image.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,10 +84,17 @@ public class AddEtudiant extends AppCompatActivity{
             }
         });
 
+        ville.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedVille = ville.getText().toString();
+            }
+        });
+
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(nom != null && prenom != null && ville != null && (m.isChecked() || f.isChecked())){
+                if(nom != null && prenom != null && selectedVille != null && image != null && (m.isChecked() || f.isChecked())){
                     error_msg.setVisibility(View.GONE);
                     requestQueue = Volley.newRequestQueue(getApplicationContext());
                     add.setText("Creating Student...");
@@ -111,7 +126,7 @@ public class AddEtudiant extends AppCompatActivity{
                             HashMap<String, String> params = new HashMap<String, String>();
                             params.put("nom", nom.getText().toString());
                             params.put("prenom", prenom.getText().toString());
-                            params.put("ville", ville.getSelectedItem().toString());
+                            params.put("ville", selectedVille);
                             params.put("sexe", sexe);
                             if(imageBase64 != null){
                                 params.put("photo", imageBase64);

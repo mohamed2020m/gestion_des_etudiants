@@ -25,4 +25,5 @@
         <item name="android:statusBarColor">@color/lighter_red</item>
     </style>
 
+
 </resources>
