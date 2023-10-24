@@ -15,6 +15,15 @@
         android:layout_centerInParent="true" />
 
     <TextView
+        android:id="@+id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textSize="18sp"
+        android:visibility="gone"
+        android:text="Empty! add some students!" />
+
+    <TextView
         android:id="@+id/error"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,7 +57,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:backgroundTint="?attr/colorPrimary"
+        android:backgroundTint="?attr/colorOnPrimary"
         android:contentDescription="shared"
         android:elevation="10dp"
         android:src="@drawable/baseline_add_24"

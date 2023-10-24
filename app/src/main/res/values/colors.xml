@@ -9,4 +9,5 @@
     <color name="pizza_title_dark">#D6D5D5</color>
     <color name="sun">#FF9800</color>
     <color name="lighter_redd">#F15D5D</color>
+    <color name="error">#FF0000</color>
 </resources>

@@ -2,6 +2,8 @@ package me.ensa.projetws;
 
 import static android.content.ContentValues.TAG;
 
+import static me.ensa.projetws.AddEtudiant.PICK_IMAGE_REQUEST;
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -16,8 +18,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -36,8 +43,11 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,15 +55,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import me.ensa.projetws.adapter.EtudiantAdapter;
 import me.ensa.projetws.beans.Etudiant;
+import me.ensa.projetws.utlis.EtudiantDeserializer;
 
 public class MainActivity extends AppCompatActivity {
+    public String host = "http://192.168.0.131";
     private RecyclerView recyclerView;
     private EtudiantAdapter etudiantAdapter = null;
     private FloatingActionButton fab;
     private ProgressBar load_data;
-    private TextView text_error;
+    private TextView text_error, empty;
     private Button try_again;
     private RelativeLayout main;
     RequestQueue requestQueue;
@@ -67,12 +80,12 @@ public class MainActivity extends AppCompatActivity {
 
         main = findViewById(R.id.main);
         text_error = findViewById(R.id.error);
+        empty = findViewById(R.id.empty);
         try_again = findViewById(R.id.try_again);
         load_data = findViewById(R.id.load_data);
         recyclerView = findViewById(R.id.recycle_view);
 
         // app title
-        // Set the custom title layout
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         getSupportActionBar().setCustomView(R.layout.custom_title);
 
@@ -115,6 +128,12 @@ public class MainActivity extends AppCompatActivity {
         enableSwipeToDeleteAndUndo();
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        refreshContent();
+    }
+
     private void enableSwipeToDeleteAndUndo() {
         SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(this) {
             @Override
@@ -123,11 +142,11 @@ public class MainActivity extends AppCompatActivity {
 
                 final int position = viewHolder.getAdapterPosition();
                 final Etudiant item = etudiantAdapter.getData().get(position);
-
+                Log.d("item", item.getId() + ", " + item.getNom());
                 etudiantAdapter.removeItem(position);
 
                 Snackbar snackbar = Snackbar
-                        .make(main, "Item was removed from the list.", Snackbar.LENGTH_LONG);
+                        .make(main, "Student was removed.", Snackbar.LENGTH_LONG);
                 snackbar.setAction("UNDO", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -157,29 +176,54 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void refreshContent() {
-        String insertUrl = "http://192.168.0.131/backend_volley/ws/loadEtudiant.php";
+        String insertUrl = host + "/backend_volley/ws/loadEtudiant.php";
 
         load_data.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
         requestQueue = Volley.newRequestQueue(getApplicationContext());
-        StringRequest request = new StringRequest(Request.Method.POST, insertUrl,
+        StringRequest request = new StringRequest(Request.Method.GET, insertUrl,
             new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
-                    Log.d(TAG, response);
+                    Log.d("tag", response);
                     load_data.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
                     text_error.setVisibility(View.GONE);
                     try_again.setVisibility(View.GONE);
 
-                    Type type = new TypeToken<Collection<Etudiant>>(){}.getType();
-                    Collection<Etudiant> etudiants = new Gson().fromJson(response, type);
+                    if(response != null){
 
-                    list_etudiants = new ArrayList<>(etudiants);
+                        Log.d("res: ", response);
+                        Type type = new TypeToken<List<Etudiant>>(){}.getType();
+                        Gson gson = new GsonBuilder()
+                                .registerTypeAdapter(Etudiant.class, new EtudiantDeserializer())
+                                .create();
+                        List<Etudiant> etudiants = gson.fromJson(response, type);
+                        if(etudiants.isEmpty()){
+                            empty.setVisibility(View.VISIBLE);
+                        }else{
+                            empty.setVisibility(View.GONE);
+//                        List<Etudiant> etudiants = new Gson().fromJson(response, type);
+                            if (etudiants != null) {
+                                Log.d("etudiant: ", etudiants.toString());
+                                for(Etudiant e : etudiants){
+                                    Log.d("e:", e.getNom());
+                                }
 
-                    for(Etudiant e : list_etudiants){
-                        Log.d(TAG, e.toString());
+                                list_etudiants = new ArrayList<>(etudiants);
+
+                                for(Etudiant e : list_etudiants){
+                                    Log.d(TAG, e.toString());
+                                }
+                            } else {
+                                Log.d("msg: ", "null");
+                            }
+                        }
+                    }else{
+                        list_etudiants = new ArrayList<>();
                     }
 
-                    etudiantAdapter = new EtudiantAdapter(MainActivity.this, list_etudiants);
+                    etudiantAdapter = new EtudiantAdapter(MainActivity.this, list_etudiants, MainActivity.this);
                     recyclerView.setAdapter(etudiantAdapter);
                     recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
                 }
@@ -208,17 +252,44 @@ public class MainActivity extends AppCompatActivity {
         };
 
         requestQueue.add(request);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        String imageBase64;
+        if ( requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri selectedImageUri = data.getData();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
+
+                // Convert the selected image to a base64 string
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                byte[] byteArray = byteArrayOutputStream.toByteArray();
+                imageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+                SharedPreferences sharedPreferences = getSharedPreferences("my_prefs", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("image", imageBase64);
+                editor.apply();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void deleteEtudiant(int id) {
-        String insertUrl = "http://192.168.0.131/backend_volley/ws/deleteEtudiant.php";
+        String insertUrl = host +"/backend_volley/ws/deleteEtudiant.php";
 
         requestQueue = Volley.newRequestQueue(getApplicationContext());
         StringRequest request = new StringRequest(Request.Method.POST, insertUrl,
             new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
-                    Log.d(TAG, response);
+                    Log.d("id", String.valueOf(id));
                     refreshContent();
                     Toast.makeText(MainActivity.this, "Deleted Successfully!", Toast.LENGTH_SHORT).show();
                 }
@@ -242,4 +313,9 @@ public class MainActivity extends AppCompatActivity {
         requestQueue.add(request);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
 }
