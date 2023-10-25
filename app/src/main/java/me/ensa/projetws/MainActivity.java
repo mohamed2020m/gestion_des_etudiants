@@ -23,11 +23,18 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,7 +47,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.search.SearchBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -59,7 +68,7 @@ import me.ensa.projetws.utlis.EtudiantDeserializer;
 
 public class MainActivity extends AppCompatActivity {
 //    public String host = "http://" + GetIPAddress.getIP();
-    public String host = "http://192.168.0.161";
+    public String host = "http://192.168.0.131";
     private RecyclerView recyclerView;
     private EtudiantAdapter etudiantAdapter = null;
     private LottieAnimationView error_icon;
@@ -68,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView text_error, empty;
     private Button try_again;
     private RelativeLayout main;
+    private TextInputEditText searchEditText;
     RequestQueue requestQueue;
     List<Etudiant> list_etudiants = null;
 
@@ -76,9 +86,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 //        UpdateNetworkSecurityConfig.updateNetworkSecurityConfig(this);
+
 
         main = findViewById(R.id.main);
         text_error = findViewById(R.id.error);
@@ -87,6 +97,56 @@ public class MainActivity extends AppCompatActivity {
         error_icon = findViewById(R.id.error_icon);
         load_data = findViewById(R.id.load_data);
         recyclerView = findViewById(R.id.recycle_view);
+
+        searchEditText = findViewById(R.id.searchEdit);
+
+        // Seach
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (etudiantAdapter != null){
+                    etudiantAdapter.getFilter().filter(searchEditText.getText().toString());
+                }
+            }
+        });
+
+        searchEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    searchEditText.clearFocus();
+                }
+            }
+        });
+
+        View rootView = findViewById(R.id.main);
+        rootView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if (searchEditText.hasFocus()) {
+                        searchEditText.clearFocus(); // Remove focus if EditText is focused
+                    }
+                }
+                return false;
+            }
+        });
+
+        ViewTreeObserver viewTreeObserver = rootView.getViewTreeObserver();
+        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (!isKeyboardVisible(rootView)) {
+                    searchEditText.clearFocus();
+                }
+            }
+        });
 
         // app title
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
@@ -131,6 +191,11 @@ public class MainActivity extends AppCompatActivity {
         enableSwipeToDeleteAndUndo();
     }
 
+    // Check if the keyboard is visible
+    private boolean isKeyboardVisible(View rootView) {
+        int heightDiff = rootView.getRootView().getHeight() - rootView.getHeight();
+        return heightDiff > rootView.getHeight() / 4;
+    }
     @Override
     protected void onPostResume() {
         super.onPostResume();
@@ -373,4 +438,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 }

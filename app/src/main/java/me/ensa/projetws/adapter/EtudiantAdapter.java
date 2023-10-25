@@ -23,6 +23,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -43,6 +45,7 @@ import com.android.volley.toolbox.Volley;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,17 +54,19 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import me.ensa.projetws.R;
 import me.ensa.projetws.beans.Etudiant;
 
-public class EtudiantAdapter extends RecyclerView.Adapter<EtudiantAdapter.EtudiantViewHolder> { // implements Filterable {
+public class EtudiantAdapter extends RecyclerView.Adapter<EtudiantAdapter.EtudiantViewHolder> implements Filterable {
     private static final String TAG = "EtudiantAdapter";
 //    public String host = "http://" + GetIPAddress.getIP();
-    public String host = "http://192.168.0.161";
+    public String host = "http://192.168.0.131";
     private String imageBase64;
     private Activity p;
     private List<Etudiant> etudiants;
+    private List<Etudiant> etudiantFilter;
     private Context context;
     private String selectedVille;
     private AlertDialog alertDialog;
     private CircleImageView edit_upload_image;
+    private NewFilter mfilter;
 
     public void updateImage(String imageBase64) {
         this.imageBase64 = imageBase64;
@@ -74,6 +79,9 @@ public class EtudiantAdapter extends RecyclerView.Adapter<EtudiantAdapter.Etudia
     public EtudiantAdapter(Context context, List<Etudiant> etudiants, Activity p) {
         this.etudiants = etudiants;
         this.context = context;
+        etudiantFilter = new ArrayList<>();
+        etudiantFilter.addAll(etudiants);
+        mfilter = new NewFilter(this);
         this.p = p;
     }
 
@@ -294,19 +302,19 @@ public class EtudiantAdapter extends RecyclerView.Adapter<EtudiantAdapter.Etudia
 
     @Override
     public void onBindViewHolder(@NonNull EtudiantViewHolder EtudiantViewHolder, int i) {
-        if(etudiants != null){
-            EtudiantViewHolder.nom.setText(etudiants.get(i).getNom().toUpperCase());
-            EtudiantViewHolder.prenom.setText(etudiants.get(i).getPrenom().toUpperCase());
-            EtudiantViewHolder.sexe.setText(etudiants.get(i).getSexe().toUpperCase());
+        if(etudiantFilter != null){
+            EtudiantViewHolder.nom.setText(etudiantFilter.get(i).getNom().toUpperCase());
+            EtudiantViewHolder.prenom.setText(etudiantFilter.get(i).getPrenom().toUpperCase());
+            EtudiantViewHolder.sexe.setText(etudiantFilter.get(i).getSexe().toUpperCase());
             if(EtudiantViewHolder.sexe.getText().equals("FEMME")){
                 EtudiantViewHolder.sexe_icon.setImageResource(R.drawable.baseline_female_24);
             }else{
                 EtudiantViewHolder.sexe_icon.setImageResource(R.drawable.baseline_male_24);
             }
-            EtudiantViewHolder.ville.setText(etudiants.get(i).getVille().toUpperCase());
-            EtudiantViewHolder.idss.setText(etudiants.get(i).getId()+"");
+            EtudiantViewHolder.ville.setText(etudiantFilter.get(i).getVille().toUpperCase());
+            EtudiantViewHolder.idss.setText(etudiantFilter.get(i).getId()+"");
             
-            String photoBase64 = etudiants.get(i).getPhoto();
+            String photoBase64 = etudiantFilter.get(i).getPhoto();
             if (photoBase64 != null) {
                 EtudiantViewHolder.photo.setImageBitmap(decodeBase64(photoBase64));
             }
@@ -320,11 +328,11 @@ public class EtudiantAdapter extends RecyclerView.Adapter<EtudiantAdapter.Etudia
 
     @Override
     public int getItemCount() {
-//        return starsFilter.size();
-        if(etudiants == null){
+//        return etudiantFilter.size();
+        if(etudiantFilter == null){
             return 0;
         }
-        return etudiants.size();
+        return etudiantFilter.size();
     }
 
 //    @Override
@@ -333,17 +341,22 @@ public class EtudiantAdapter extends RecyclerView.Adapter<EtudiantAdapter.Etudia
 //    }
 
     public void removeItem(int position) {
-        etudiants.remove(position);
+        etudiantFilter.remove(position);
         notifyItemRemoved(position);
     }
 
     public void restoreItem(Etudiant item, int position) {
-        etudiants.add(position, item);
+        etudiantFilter.add(position, item);
         notifyItemInserted(position);
     }
 
     public List<Etudiant> getData() {
-        return etudiants;
+        return etudiantFilter;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return mfilter;
     }
 
     public class EtudiantViewHolder extends RecyclerView.ViewHolder {
@@ -368,37 +381,34 @@ public class EtudiantAdapter extends RecyclerView.Adapter<EtudiantAdapter.Etudia
         }
     }
 
-    // Inside your RecyclerView adapter or wherever you handle the image updates
-
-
-//    public class NewFilter extends Filter {
-//        public RecyclerView.Adapter mAdapter;
-//        public NewFilter(RecyclerView.Adapter mAdapter) {
-//            super();
-//            this.mAdapter = mAdapter;
-//        }
-//        @Override
-//        protected FilterResults performFiltering(CharSequence charSequence) {
-//            starsFilter.clear();
-//            final FilterResults results = new FilterResults();
-//            if (charSequence.length() == 0) {
-//                starsFilter.addAll(etudiants);
-//            } else {
-//                final String filterPattern = charSequence.toString().toLowerCase().trim();
-//                for (Etudiant p : etudiants) {
-//                    if (p.getName().toLowerCase().startsWith(filterPattern)) {
-//                        starsFilter.add(p);
-//                    }
-//                }
-//            }
-//            results.values = starsFilter;
-//            results.count = starsFilter.size();
-//            return results;
-//        }
-//        @Override
-//        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-//            starsFilter = (List<Etudiant>) filterResults.values;
-//            this.mAdapter.notifyDataSetChanged();
-//        }
-//    }
+    public class NewFilter extends Filter {
+        public RecyclerView.Adapter mAdapter;
+        public NewFilter(RecyclerView.Adapter mAdapter) {
+            super();
+            this.mAdapter = mAdapter;
+        }
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            etudiantFilter.clear();
+            final FilterResults results = new FilterResults();
+            if (charSequence.length() == 0) {
+                etudiantFilter.addAll(etudiants);
+            } else {
+                final String filterPattern = charSequence.toString().toLowerCase().trim();
+                for (Etudiant e : etudiants) {
+                    if (e.getNom().toLowerCase().startsWith(filterPattern)) {
+                        etudiantFilter.add(e);
+                    }
+                }
+            }
+            results.values = etudiantFilter;
+            results.count = etudiantFilter.size();
+            return results;
+        }
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            etudiantFilter = (List<Etudiant>) filterResults.values;
+            this.mAdapter.notifyDataSetChanged();
+        }
+    }
 }

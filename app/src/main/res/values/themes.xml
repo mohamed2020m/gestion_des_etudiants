@@ -25,5 +25,15 @@
         <item name="android:statusBarColor">@color/lighter_red</item>
     </style>
 
+    <style name="RoundedSearchBar" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="shapeAppearanceOverlay">@style/RoundedCorner50Percent</item>
+    </style>
+
+    <style name="RoundedCorner50Percent">
+        <item name="cornerSizeTopLeft">50%</item>
+        <item name="cornerSizeTopRight">50%</item>
+        <item name="cornerSizeBottomLeft">50%</item>
+        <item name="cornerSizeBottomRight">50%</item>
+    </style>
 
 </resources>

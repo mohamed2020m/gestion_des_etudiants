@@ -29,21 +29,6 @@
         android:layout_gravity="center"
         android:src="@drawable/upload" />
 
-<!--    <TextView-->
-<!--        android:id="@+id/textView"-->
-<!--        style="@style/text"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Nom : " />-->
-
-<!--    <EditText-->
-<!--        android:id="@+id/nom"-->
-<!--        style="@style/input"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:ems="10"-->
-<!--        android:inputType="textPersonName" />-->
-
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textField"
         android:layout_width="match_parent"
@@ -77,34 +62,6 @@
             />
 
     </com.google.android.material.textfield.TextInputLayout>
-
-<!--    <TextView-->
-<!--        android:id="@+id/textView2"-->
-<!--        style="@style/text"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Prenom :" />-->
-<!--    <EditText-->
-<!--        android:id="@+id/prenom"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:ems="10"-->
-<!--        style="@style/input"-->
-<!--        android:inputType="textPersonName" />-->
-
-<!--    <TextView-->
-<!--        android:id="@+id/textView3"-->
-<!--        style="@style/text"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Ville" />-->
-<!--    <Spinner-->
-<!--        android:id="@+id/ville"-->
-<!--        android:entries="@array/villes"-->
-<!--        style="@style/input"-->
-<!--        android:layout_marginVertical="10dp"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content" />-->
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/dropdown"

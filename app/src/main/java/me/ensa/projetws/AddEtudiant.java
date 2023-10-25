@@ -41,7 +41,7 @@ import me.ensa.projetws.utlis.GetIPAddress;
 
 public class AddEtudiant extends AppCompatActivity{
 //    public String host = "http://" + GetIPAddress.getIP();
-    public String host = "http://192.168.0.161";
+    public String host = "http://192.168.0.131";
     private EditText nom;
     private EditText prenom;
     private AutoCompleteTextView ville;
@@ -61,13 +61,13 @@ public class AddEtudiant extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_etudiant);
-        image = (ImageView) findViewById(R.id.upload_image);
-        nom = (EditText) findViewById(R.id.nom);
-        prenom = (EditText) findViewById(R.id.prenom);
-        ville = (AutoCompleteTextView) findViewById(R.id.ville);
-        add = (Button) findViewById(R.id.add);
-        m = (RadioButton) findViewById(R.id.m);
-        f = (RadioButton) findViewById(R.id.f);
+        image = findViewById(R.id.upload_image);
+        nom = findViewById(R.id.nom);
+        prenom = findViewById(R.id.prenom);
+        ville = findViewById(R.id.ville);
+        add = findViewById(R.id.add);
+        m = findViewById(R.id.m);
+        f = findViewById(R.id.f);
         error_msg = findViewById(R.id.error_msg);
 
         // Enable the "Up" button
